@@ -1,16 +1,19 @@
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
+import { BrowserRouter } from 'react-router-dom' // ✅ Moved here
 
-// Add error boundary
 const rootElement = document.getElementById('root')
 if (!rootElement) throw new Error('Failed to find the root element')
 
 const root = createRoot(rootElement)
 
-// Wrap in try-catch for better error handling
 try {
-  root.render(<App />)
+  root.render(
+    <BrowserRouter> {/* ✅ Wrapping App here */}
+      <App />
+    </BrowserRouter>
+  )
   console.log('App rendered successfully')
 } catch (error) {
   console.error('Error rendering app:', error)
