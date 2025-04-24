@@ -1,7 +1,10 @@
-const User = require('../models/User');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+// controllers/authController.js
 
+import User from '../models/User.js';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+
+// Function for generating token
 const generateToken = (user) => {
     return jwt.sign(
         { id: user._id, email: user.email, role: user.role },
@@ -11,7 +14,7 @@ const generateToken = (user) => {
 };
 
 // Register a new user
-exports.register = async (req, res) => {
+export const register = async (req, res) => {
     try {
         const { email, password, name, role } = req.body;
 
@@ -50,7 +53,7 @@ exports.register = async (req, res) => {
 };
 
 // Login user
-exports.login = async (req, res) => {
+export const login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
@@ -61,7 +64,7 @@ exports.login = async (req, res) => {
         }
 
         // Check password
-        const isMatch = await user.comparePassword(password);
+        const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
@@ -85,7 +88,7 @@ exports.login = async (req, res) => {
 };
 
 // Get user profile
-exports.getProfile = async (req, res) => {
+export const getProfile = async (req, res) => {
     try {
         const user = await User.findById(req.user.id).select('-password');
         if (!user) {
@@ -95,4 +98,4 @@ exports.getProfile = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: 'Error fetching profile', error: error.message });
     }
-}; 
+};

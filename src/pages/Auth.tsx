@@ -12,7 +12,7 @@ import { Fuel } from "lucide-react";
 export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
+  // const location = useLocation();
   const { toast } = useToast();
   const { login, signup } = useAuth();
 

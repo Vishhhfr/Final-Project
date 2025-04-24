@@ -1,40 +1,35 @@
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 import express from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import authRoutes from './routes/auth.js';
 import orderRoutes from './routes/orders.js';
 import userRoutes from './routes/users.js';
-import { auth } from './middleware/auth.js';
-import connectDB from './lib/mongodb.js';
+import { authenticate } from './middleware/auth.js'; 
+import connectDB from './lib/mongodb.js'; 
 
-// Load environment variables
-dotenv.config();
-
-// Verify environment variables
-console.log('Environment Variables:');
-console.log('PORT:', process.env.PORT);
-console.log('MONGODB_URI:', process.env.MONGODB_URI ? 'Set' : 'Not Set');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+dotenv.config({ path: `${__dirname}/../.env` });
 
 const app = express();
 
-// Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:5173', 
+  credentials: true,
+}));
 app.use(express.json());
 
-// Basic route for testing
-app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to FuelMate API' });
-});
+app.use('/api/auth', authRoutes); 
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/orders', auth, orderRoutes);
-app.use('/api/users', auth, userRoutes);
+app.use('/api/orders', authenticate, orderRoutes);
+app.use('/api/users', authenticate, userRoutes);
 
-// Error handling middleware
+
 app.use((err, req, res, next) => {
-  console.error('Error:', err);
-  res.status(500).json({ 
+  console.error('Unhandled Error:', err);
+  res.status(500).json({
     message: 'Something went wrong!',
     error: process.env.NODE_ENV === 'development' ? err.message : undefined
   });
@@ -42,16 +37,16 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 
-// Start server
-try {
-  // Connect to MongoDB
-  await connectDB();
-  
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  });
-} catch (error) {
-  console.error('Failed to start server:', error);
-  process.exit(1);
-} 
+const startServer = async () => {
+  try {
+    await connectDB(); // Connect to MongoDB
+    app.listen(PORT, () => {
+      console.log(`✅ Server is running on http://localhost:${PORT}`);
+    });
+  } catch (err) {
+    console.error('❌ Failed to start server:', err);
+    process.exit(1);
+  }
+};
+
+startServer(); 
